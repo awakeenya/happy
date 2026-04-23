@@ -178,65 +178,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; h
       <div class="clabel">每日光譜自評</div>
       <p style="font-size:11px;color:var(--light);font-weight:300;margin-bottom:16px;">此刻你在光譜的哪個位置？</p>
 
-      <div class="slider-wrap">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <span style="font-size:11px;color:var(--c0);font-weight:400;">⭐ 意義</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:11px;color:var(--light);min-width:28px;text-align:right;">恐懼</span>
-          <input type="range" min="1" max="10" value="5" id="sl0" style="flex:1;accent-color:#7b68a8;" oninput="document.getElementById('sv0').textContent=this.value">
-          <span style="font-size:11px;color:var(--c0);min-width:28px;">愛</span>
-          <span style="font-size:12px;font-weight:600;color:var(--c0);min-width:16px;" id="sv0">5</span>
-        </div>
-      </div>
-
-      <div class="slider-wrap">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <span style="font-size:11px;color:var(--c1);font-weight:400;">🔵 自信</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:11px;color:var(--light);min-width:28px;text-align:right;">懷疑</span>
-          <input type="range" min="1" max="10" value="5" id="sl1" style="flex:1;accent-color:#5a8ca8;" oninput="document.getElementById('sv1').textContent=this.value">
-          <span style="font-size:11px;color:var(--c1);min-width:28px;">確信</span>
-          <span style="font-size:12px;font-weight:600;color:var(--c1);min-width:16px;" id="sv1">5</span>
-        </div>
-      </div>
-
-      <div class="slider-wrap">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <span style="font-size:11px;color:var(--c2);font-weight:400;">🟡 成就</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:11px;color:var(--light);min-width:28px;text-align:right;">停滯</span>
-          <input type="range" min="1" max="10" value="5" id="sl2" style="flex:1;accent-color:#b8924a;" oninput="document.getElementById('sv2').textContent=this.value">
-          <span style="font-size:11px;color:var(--c2);min-width:28px;">流動</span>
-          <span style="font-size:12px;font-weight:600;color:var(--c2);min-width:16px;" id="sv2">5</span>
-        </div>
-      </div>
-
-      <div class="slider-wrap">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <span style="font-size:11px;color:var(--c3);font-weight:400;">🟢 金錢</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:11px;color:var(--light);min-width:28px;text-align:right;">匱乏</span>
-          <input type="range" min="1" max="10" value="5" id="sl3" style="flex:1;accent-color:#3a7a52;" oninput="document.getElementById('sv3').textContent=this.value">
-          <span style="font-size:11px;color:var(--c3);min-width:28px;">餘裕</span>
-          <span style="font-size:12px;font-weight:600;color:var(--c3);min-width:16px;" id="sv3">5</span>
-        </div>
-      </div>
-
-      <div class="slider-wrap">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <span style="font-size:11px;color:var(--c4);font-weight:400;">🔴 支持</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:11px;color:var(--light);min-width:28px;text-align:right;">緊繃</span>
-          <input type="range" min="1" max="10" value="5" id="sl4" style="flex:1;accent-color:#a86b6b;" oninput="document.getElementById('sv4').textContent=this.value">
-          <span style="font-size:11px;color:var(--c4);min-width:28px;">放鬆</span>
-          <span style="font-size:12px;font-weight:600;color:var(--c4);min-width:16px;" id="sv4">5</span>
-        </div>
-      </div>
+      <div id="spectrum-ui"></div>
     </div>
 
     <button class="savebtn" onclick="saveDaily()">✦ 儲存今日記錄</button>
@@ -460,19 +402,14 @@ function go(name) {
   if (name==='dash') renderDash();
   if (name==='daily') {
     renderDaily();
-    // 還原今天的光譜分數
+    // 還原今天的光譜分數到 SPECTRUM 變數
     var tk2 = today();
     var saved2 = (S.scores && S.scores[tk2]) || {};
-    var sids = ['sl0','sl1','sl2','sl3','sl4'];
-    var vids = ['sv0','sv1','sv2','sv3','sv4'];
     for (var si=0; si<5; si++) {
-      var sel = document.getElementById(sids[si]);
-      var vel = document.getElementById(vids[si]);
-      if (sel && saved2['fw'+si] !== undefined) {
-        sel.value = saved2['fw'+si];
-        if (vel) vel.textContent = saved2['fw'+si];
-      }
+      if (saved2['fw'+si] !== undefined) SPECTRUM[si] = saved2['fw'+si];
+      else SPECTRUM[si] = 5;
     }
+    renderSpectrum();
   }
   if (name==='setup') renderSetup();
   if (name==='cal') renderCal();
@@ -645,20 +582,14 @@ function saveDaily() {
   }
   S.daily[tk] = result;
 
-  // 儲存自評分數——直接讀 DOM 值
+  // 儲存自評分數——從 SPECTRUM 變數讀取
   if (!S.scores) S.scores = {};
-  var getVal = function(id, def) {
-    var el = document.getElementById(id);
-    if (!el) return def;
-    var v = parseInt(el.value);
-    return isNaN(v) ? def : v;
-  };
   S.scores[tk] = {
-    fw0: getVal('sl0', 5),
-    fw1: getVal('sl1', 5),
-    fw2: getVal('sl2', 5),
-    fw3: getVal('sl3', 5),
-    fw4: getVal('sl4', 5)
+    fw0: SPECTRUM[0],
+    fw1: SPECTRUM[1],
+    fw2: SPECTRUM[2],
+    fw3: SPECTRUM[3],
+    fw4: SPECTRUM[4]
   };
 
   save();
@@ -667,7 +598,81 @@ function saveDaily() {
   setTimeout(function(){ go('dash'); }, 1200);
 }
 
-// ── TREND ──
+// ── SPECTRUM VALUES (stored in JS, not DOM) ──
+var SPECTRUM = [5, 5, 5, 5, 5]; // fw0~fw4 current values
+var SPECTRUM_INFO = [
+  {emoji:'⭐', name:'意義', left:'恐懼', right:'愛', color:'#7b68a8'},
+  {emoji:'🔵', name:'自信', left:'懷疑', right:'確信', color:'#5a8ca8'},
+  {emoji:'🟡', name:'成就', left:'停滯', right:'流動', color:'#b8924a'},
+  {emoji:'🟢', name:'金錢', left:'匱乏', right:'餘裕', color:'#3a7a52'},
+  {emoji:'🔴', name:'支持', left:'緊繃', right:'放鬆', color:'#a86b6b'},
+];
+
+function renderSpectrum() {
+  var container = document.getElementById('spectrum-ui');
+  if (!container) return;
+  container.innerHTML = '';
+
+  for (var i = 0; i < 5; i++) {
+    var info = SPECTRUM_INFO[i];
+    var cur = SPECTRUM[i];
+
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'margin-bottom:14px;';
+
+    // Header row
+    var header = document.createElement('div');
+    header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;';
+    header.innerHTML =
+      '<span style="font-size:11px;font-weight:600;color:'+info.color+';">'+info.emoji+' '+info.name+'</span>'+
+      '<span style="font-size:11px;color:'+info.color+';font-weight:600;">'+cur+' / 10</span>';
+    wrap.appendChild(header);
+
+    // Buttons row
+    var btnsRow = document.createElement('div');
+    btnsRow.style.cssText = 'display:flex;align-items:center;gap:4px;';
+
+    // Left label
+    var leftLabel = document.createElement('span');
+    leftLabel.textContent = info.left;
+    leftLabel.style.cssText = 'font-size:10px;color:var(--light);min-width:24px;text-align:right;flex-shrink:0;';
+    btnsRow.appendChild(leftLabel);
+
+    // Number buttons
+    var btnWrap = document.createElement('div');
+    btnWrap.style.cssText = 'display:flex;gap:3px;flex:1;justify-content:center;';
+
+    for (var n = 1; n <= 10; n++) {
+      (function(num, fwi, color) {
+        var btn = document.createElement('button');
+        btn.textContent = num;
+        var isSelected = num === SPECTRUM[fwi];
+        btn.style.cssText =
+          'width:24px;height:24px;border-radius:50%;border:none;cursor:pointer;font-size:10px;font-weight:600;transition:all 0.15s;flex-shrink:0;' +
+          (isSelected
+            ? 'background:'+color+';color:#fff;transform:scale(1.15);'
+            : 'background:var(--sky);color:var(--light);');
+        btn.onclick = function() {
+          SPECTRUM[fwi] = num;
+          renderSpectrum();
+        };
+        btnWrap.appendChild(btn);
+      })(n, i, info.color);
+    }
+    btnsRow.appendChild(btnWrap);
+
+    // Right label
+    var rightLabel = document.createElement('span');
+    rightLabel.textContent = info.right;
+    rightLabel.style.cssText = 'font-size:10px;color:'+info.color+';min-width:24px;flex-shrink:0;';
+    btnsRow.appendChild(rightLabel);
+
+    wrap.appendChild(btnsRow);
+    container.appendChild(wrap);
+  }
+}
+
+
 function renderTrend() {
   var container = document.getElementById('trend-charts');
   container.innerHTML = '';
