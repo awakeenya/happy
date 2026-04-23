@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>北極星飛輪系統</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --deep: #1e2d3d;
+  --gold: #c4a882;
+  --warm: #f5f0e8;
+  --cloud: #f8f9fa;
+  --white: #fff;
+  --text: #2c3e50;
+  --light: #6a8090;
+  --mist: #8fa8c0;
+  --border: #e8ecf0;
+  --sky: #e8f0f7;
+  --c0: #7b68a8; --bg0: #f0edf8;
+  --c1: #5a8ca8; --bg1: #e8f2f8;
+  --c2: #b8924a; --bg2: #f8f0e0;
+  --c3: #3a7a52; --bg3: #e8f5ee;
+  --c4: #a86b6b; --bg4: #f8eaea;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { font-family:'Noto Serif TC',serif; background:var(--deep); color:var(--text); max-width:480px; margin:0 auto; min-height:100vh; }
+
+.screen { display:none; min-height:100vh; padding-bottom:72px; background:var(--cloud); }
+.screen.active { display:block; }
+
+/* NAV */
+.nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background:var(--white); border-top:1px solid var(--border); display:flex; z-index:100; padding-bottom:env(safe-area-inset-bottom); }
+.nb { flex:1; padding:10px 0 8px; border:none; background:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; }
+.ni { font-size:19px; }
+.nl { font-size:9px; color:var(--mist); font-family:'Noto Serif TC',serif; }
+.nb.on .nl { color:var(--gold); }
+
+/* HERO */
+.hero { background:linear-gradient(160deg,#1a2a3a,#2a3f55); padding:44px 24px 28px; }
+.hlabel { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:10px; display:block; }
+.hero h1 { font-size:22px; font-weight:300; color:var(--white); margin-bottom:4px; }
+.hero p { font-size:12px; color:rgba(255,255,255,0.4); }
+.star { font-size:22px; display:block; margin-bottom:10px; animation:tw 4s ease-in-out infinite; }
+@keyframes tw { 0%,100%{opacity:0.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.08)} }
+
+/* CARDS */
+.pad { padding:16px; }
+.card { background:var(--white); border-radius:16px; padding:18px 20px; margin-bottom:12px; box-shadow:0 2px 12px rgba(0,0,0,0.04); }
+.clabel { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--mist); margin-bottom:14px; font-family:'Cormorant Garamond',serif; }
+.inp { width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:10px; font-size:13px; font-family:'Noto Serif TC',serif; color:var(--text); background:var(--cloud); margin-bottom:10px; }
+.inp:focus { outline:none; border-color:var(--gold); background:var(--white); }
+textarea.inp { resize:none; height:68px; line-height:1.6; }
+.btn { width:100%; padding:13px; background:var(--deep); color:var(--white); border:none; border-radius:12px; font-size:13px; font-weight:600; font-family:'Noto Serif TC',serif; cursor:pointer; letter-spacing:1px; }
+.btn2 { width:100%; padding:11px; background:var(--cloud); color:var(--text); border:1.5px solid var(--border); border-radius:12px; font-size:13px; font-family:'Noto Serif TC',serif; cursor:pointer; margin-top:8px; }
+.row { display:flex; gap:8px; }
+.row .inp { margin-bottom:0; flex:1; }
+select.inp { margin-bottom:0; }
+.pts { width:70px !important; flex:none !important; text-align:center; }
+
+/* DASH */
+.ncard { background:rgba(196,168,130,0.1); border:1px solid rgba(196,168,130,0.2); border-radius:12px; padding:12px 16px; }
+.ncard p { font-size:12px; color:rgba(255,255,255,0.75); font-weight:300; line-height:1.7; font-style:italic; }
+.ncard .b { font-size:10px; color:var(--gold); margin-top:6px; font-style:normal; }
+.scard { background:var(--white); margin:16px 16px 12px; border-radius:16px; padding:18px 20px; box-shadow:0 4px 20px rgba(0,0,0,0.06); }
+.snum { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--gold); line-height:1; }
+.track { height:6px; background:var(--sky); border-radius:3px; overflow:hidden; margin-top:10px; }
+.fill { height:100%; border-radius:3px; transition:width 0.6s; }
+.fwitem { background:var(--white); border-radius:14px; padding:14px 18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:10px; cursor:pointer; }
+.fwtop { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+.fwico { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.fwname { font-size:14px; font-weight:600; color:var(--text); }
+.fwdef { font-size:11px; color:var(--light); font-weight:300; margin-top:2px; line-height:1.4; }
+.fwpct { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; margin-left:auto; }
+.fwmeta { font-size:11px; color:var(--light); margin-top:6px; }
+
+/* DAILY */
+.dsec { background:var(--white); border-radius:16px; overflow:hidden; margin-bottom:12px; box-shadow:0 2px 12px rgba(0,0,0,0.04); }
+.dsech { padding:14px 18px; display:flex; align-items:center; gap:10px; }
+.dsecbody { padding:0 18px 16px; }
+.dact { display:flex; gap:12px; align-items:flex-start; padding:10px 12px; border-radius:10px; background:var(--cloud); cursor:pointer; margin-bottom:8px; }
+.dact.done { background:#f0faf4; }
+.dact:last-child { margin-bottom:0; }
+.dchk { width:22px; height:22px; border-radius:50%; border:2px solid var(--mist); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:11px; color:var(--white); }
+.dact.done .dchk { background:var(--c3); border-color:var(--c3); }
+.dname { font-size:13px; color:var(--text); font-weight:300; line-height:1.4; }
+.dact.done .dname { text-decoration:line-through; color:var(--light); }
+.dpts { font-size:10px; color:var(--mist); margin-top:2px; }
+.anchor-badge { font-size:9px; background:var(--warm); color:#8a6040; padding:2px 6px; border-radius:6px; margin-left:6px; vertical-align:middle; }
+.savebtn { width:100%; padding:14px; background:var(--deep); color:var(--white); border:none; border-radius:12px; font-size:14px; font-weight:600; font-family:'Noto Serif TC',serif; cursor:pointer; letter-spacing:1px; }
+
+/* SETUP */
+.fwcard { background:var(--white); border-radius:16px; overflow:hidden; margin-bottom:12px; box-shadow:0 2px 12px rgba(0,0,0,0.04); }
+.fwhead { padding:14px 18px; display:flex; align-items:center; gap:12px; }
+.fwhead-ico { font-size:22px; }
+.fwhead h3 { font-size:15px; font-weight:600; color:var(--text); }
+.fwhead p { font-size:11px; color:var(--light); font-weight:300; margin-top:2px; }
+.fwbody { padding:0 18px 18px; }
+.section-lbl { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--mist); margin-bottom:10px; font-family:'Cormorant Garamond',serif; }
+.anchor-box { background:var(--warm); border-radius:12px; padding:12px 14px; margin-bottom:14px; }
+.anchor-wisdom { font-size:11px; color:#8a6040; font-weight:300; font-style:italic; line-height:1.5; margin-bottom:10px; display:flex; align-items:flex-start; gap:6px; }
+.bitem { background:var(--cloud); border-radius:10px; padding:10px 12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:flex-start; }
+.bitem-info { flex:1; }
+.bitem-name { font-size:13px; font-weight:600; color:var(--text); }
+.bitem-meta { display:flex; gap:6px; margin-top:4px; }
+.tag { font-size:10px; padding:2px 8px; border-radius:8px; }
+.tf { background:var(--sky); color:#5a8090; }
+.tp { background:var(--warm); color:#8a6040; font-weight:600; }
+.bdel { font-size:18px; color:var(--mist); cursor:pointer; padding:0 4px; }
+.addbtn { width:100%; padding:10px; background:var(--deep); color:var(--white); border:none; border-radius:10px; font-size:12px; font-weight:600; font-family:'Noto Serif TC',serif; cursor:pointer; margin-top:6px; }
+
+/* SLIDER */
+.slider-wrap { margin-bottom:10px; }
+.slider-top { display:flex; justify-content:space-between; font-size:12px; color:var(--light); margin-bottom:6px; }
+.slider-top .sval { font-weight:600; font-size:14px; }
+input[type=range] { width:100%; height:4px; -webkit-appearance:none; background:var(--sky); border-radius:2px; outline:none; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; border-radius:50%; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.15); }
+
+/* TREND */
+.trend-seg { background:var(--white); border-radius:16px; padding:16px 18px; margin-bottom:12px; box-shadow:0 2px 12px rgba(0,0,0,0.04); }
+.trend-seg-top { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.trend-canvas { width:100%; height:80px; display:block; }
+
+.badge { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; font-size:11px; margin-bottom:14px; }
+.badge.on { background:#e8f5ee; color:var(--c3); }
+.badge.off { background:var(--warm); color:#8a6040; }
+.bdot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+.step { display:flex; gap:10px; align-items:flex-start; margin-bottom:10px; }
+.stepn { width:22px; height:22px; border-radius:50%; background:var(--deep); color:var(--white); font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.stept { font-size:12px; color:var(--text); font-weight:300; line-height:1.7; }
+
+/* TOAST */
+.toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(16px); background:var(--deep); color:var(--white); padding:10px 20px; border-radius:20px; font-size:12px; opacity:0; transition:all 0.3s; z-index:999; pointer-events:none; border:1px solid rgba(196,168,130,0.3); }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.ok { background:var(--c3); }
+.toast.err { background:#c0392b; }
+</style>
+</head>
+<body>
+
+<!-- DASH -->
+<div class="screen active" id="s-dash">
+  <div class="hero">
+    <span class="star">✦</span>
+    <span class="hlabel">北極星飛輪系統</span>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:20px;" id="dash-date"></div>
+    <div class="ncard">
+      <p id="ns-text">成為阿比驕傲的那個媽媽——令人安心、喜愛、驕傲的存在。</p>
+      <p class="b">你的存在本身就是世界的祝福。</p>
+    </div>
+  </div>
+  <div class="scard">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div class="clabel">今日北極星指數</div>
+        <div style="font-size:11px;color:var(--light);">一天一小步，慢慢成飛輪。</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="snum" id="tscore">0</div>
+        <div style="font-size:10px;color:var(--mist);">/ <span id="tmax">100</span></div>
+      </div>
+    </div>
+    <div class="track"><div class="fill" id="tbar" style="background:linear-gradient(90deg,var(--gold),#e8c4a0);width:0%"></div></div>
+  </div>
+  <div style="padding:0 16px;" id="dash-grid"></div>
+</div>
+
+<!-- DAILY -->
+<div class="screen" id="s-daily">
+  <div class="hero">
+    <span class="hlabel">Daily Actions</span>
+    <h1>今日行為記錄</h1>
+    <p>勾選今天完成的行為，飛輪自動轉動</p>
+  </div>
+  <div class="pad">
+    <div id="daily-list"></div>
+
+    <!-- 每日自評 -->
+    <div class="card" style="margin-top:4px;">
+      <div class="clabel">每日光譜自評</div>
+      <p style="font-size:11px;color:var(--light);font-weight:300;margin-bottom:16px;">此刻你在光譜的哪個位置？</p>
+
+      <div class="slider-wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-size:11px;color:var(--c0);font-weight:400;">⭐ 意義</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:var(--light);min-width:28px;text-align:right;">恐懼</span>
+          <input type="range" min="1" max="10" value="5" id="sl0" style="flex:1;accent-color:#7b68a8;" oninput="document.getElementById('sv0').textContent=this.value">
+          <span style="font-size:11px;color:var(--c0);min-width:28px;">愛</span>
+          <span style="font-size:12px;font-weight:600;color:var(--c0);min-width:16px;" id="sv0">5</span>
+        </div>
+      </div>
+
+      <div class="slider-wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-size:11px;color:var(--c1);font-weight:400;">🔵 自信</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:var(--light);min-width:28px;text-align:right;">懷疑</span>
+          <input type="range" min="1" max="10" value="5" id="sl1" style="flex:1;accent-color:#5a8ca8;" oninput="document.getElementById('sv1').textContent=this.value">
+          <span style="font-size:11px;color:var(--c1);min-width:28px;">確信</span>
+          <span style="font-size:12px;font-weight:600;color:var(--c1);min-width:16px;" id="sv1">5</span>
+        </div>
+      </div>
+
+      <div class="slider-wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-size:11px;color:var(--c2);font-weight:400;">🟡 成就</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:var(--light);min-width:28px;text-align:right;">停滯</span>
+          <input type="range" min="1" max="10" value="5" id="sl2" style="flex:1;accent-color:#b8924a;" oninput="document.getElementById('sv2').textContent=this.value">
+          <span style="font-size:11px;color:var(--c2);min-width:28px;">流動</span>
+          <span style="font-size:12px;font-weight:600;color:var(--c2);min-width:16px;" id="sv2">5</span>
+        </div>
+      </div>
+
+      <div class="slider-wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-size:11px;color:var(--c3);font-weight:400;">🟢 金錢</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:var(--light);min-width:28px;text-align:right;">匱乏</span>
+          <input type="range" min="1" max="10" value="5" id="sl3" style="flex:1;accent-color:#3a7a52;" oninput="document.getElementById('sv3').textContent=this.value">
+          <span style="font-size:11px;color:var(--c3);min-width:28px;">餘裕</span>
+          <span style="font-size:12px;font-weight:600;color:var(--c3);min-width:16px;" id="sv3">5</span>
+        </div>
+      </div>
+
+      <div class="slider-wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-size:11px;color:var(--c4);font-weight:400;">🔴 支持</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:var(--light);min-width:28px;text-align:right;">緊繃</span>
+          <input type="range" min="1" max="10" value="5" id="sl4" style="flex:1;accent-color:#a86b6b;" oninput="document.getElementById('sv4').textContent=this.value">
+          <span style="font-size:11px;color:var(--c4);min-width:28px;">放鬆</span>
+          <span style="font-size:12px;font-weight:600;color:var(--c4);min-width:16px;" id="sv4">5</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="savebtn" onclick="saveDaily()">✦ 儲存今日記錄</button>
+  </div>
+</div>
+
+<!-- TREND -->
+<div class="screen" id="s-trend">
+  <div class="hero">
+    <span class="hlabel">Progress</span>
+    <h1>飛輪趨勢</h1>
+    <p>自評分數的變化，就是飛輪在轉的證明</p>
+  </div>
+  <div class="pad">
+    <div class="card" style="padding:14px 16px;">
+      <div class="clabel">最近30天</div>
+      <div id="trend-charts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div class="screen" id="s-setup">
+  <div class="hero">
+    <span class="hlabel">Setup</span>
+    <h1>定義你的飛輪</h1>
+    <p>設定五大飛輪的定義與行為目標</p>
+  </div>
+  <div class="pad">
+    <div class="card">
+      <div class="clabel">北極星宣言</div>
+      <textarea class="inp" id="ns-input" placeholder="成為阿比驕傲的那個媽媽……"></textarea>
+      <button class="btn" onclick="saveNS()">儲存北極星</button>
+    </div>
+    <div id="setup-list"></div>
+  </div>
+</div>
+
+<!-- CLOUD -->
+<div class="screen" id="s-cloud">
+  <div class="hero">
+    <span class="hlabel">Cloud Sync</span>
+    <h1>雲端同步設定</h1>
+    <p>將每日記錄自動存入 Google Sheets</p>
+  </div>
+  <div class="pad">
+    <div class="card">
+      <div class="badge off" id="sync-badge"><div class="bdot"></div><span id="sync-txt">尚未連接</span></div>
+      <div class="clabel">設定步驟</div>
+      <div class="step"><div class="stepn">1</div><div class="stept">開啟 sheets.google.com，新增試算表</div></div>
+      <div class="step"><div class="stepn">2</div><div class="stept">電腦上點「擴充功能」→「Apps Script」</div></div>
+      <div class="step"><div class="stepn">3</div><div class="stept">貼上程式碼（awakeenya_GoogleAppsScript.js）</div></div>
+      <div class="step"><div class="stepn">4</div><div class="stept">「部署」→「網路應用程式」→「任何人」→ 複製網址</div></div>
+      <div class="step"><div class="stepn">5</div><div class="stept">貼到下方，儲存</div></div>
+      <input class="inp" type="url" id="script-inp" placeholder="https://script.google.com/macros/s/..." style="margin-top:10px;">
+      <input class="inp" type="url" id="sheets-inp" placeholder="Google Sheets 網址（選填）">
+      <button class="btn" onclick="saveCloud()">✦ 儲存雲端設定</button>
+      <div id="sheets-wrap" style="display:none;margin-top:10px;">
+        <a id="sheets-link" href="#" target="_blank" style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg3);border-radius:12px;text-decoration:none;">
+          <span style="font-size:18px;">📊</span>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--c3);">開啟 Google Sheets</div>
+            <div style="font-size:11px;color:var(--light);">查看所有歷史紀錄</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CALENDAR -->
+<div class="screen" id="s-cal">
+  <div class="hero">
+    <span class="hlabel">Calendar</span>
+    <h1 id="cal-title">飛輪日曆</h1>
+    <p>每天五個色點，代表五大飛輪的轉動狀態</p>
+  </div>
+  <div class="pad">
+    <!-- Month nav -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <button onclick="calPrev()" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);font-size:16px;cursor:pointer;">‹</button>
+      <div style="font-size:15px;font-weight:600;color:var(--text);" id="cal-month-label"></div>
+      <button onclick="calNext()" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);font-size:16px;cursor:pointer;">›</button>
+    </div>
+    <!-- Legend -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;background:var(--white);border-radius:12px;padding:12px 14px;">
+      <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--light);">⭐ <span style="width:8px;height:8px;border-radius:50%;background:#7b68a8;display:inline-block;"></span>意義</div>
+      <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--light);">🔵 <span style="width:8px;height:8px;border-radius:50%;background:#5a8ca8;display:inline-block;"></span>自信</div>
+      <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--light);">🟡 <span style="width:8px;height:8px;border-radius:50%;background:#b8924a;display:inline-block;"></span>成就</div>
+      <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--light);">🟢 <span style="width:8px;height:8px;border-radius:50%;background:#3a7a52;display:inline-block;"></span>金錢</div>
+      <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--light);">🔴 <span style="width:8px;height:8px;border-radius:50%;background:#a86b6b;display:inline-block;"></span>支持</div>
+    </div>
+    <!-- Day headers -->
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;">
+      <div style="text-align:center;font-size:10px;color:var(--mist);">日</div>
+      <div style="text-align:center;font-size:10px;color:var(--mist);">一</div>
+      <div style="text-align:center;font-size:10px;color:var(--mist);">二</div>
+      <div style="text-align:center;font-size:10px;color:var(--mist);">三</div>
+      <div style="text-align:center;font-size:10px;color:var(--mist);">四</div>
+      <div style="text-align:center;font-size:10px;color:var(--mist);">五</div>
+      <div style="text-align:center;font-size:10px;color:var(--mist);">六</div>
+    </div>
+    <!-- Calendar grid -->
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;" id="cal-grid"></div>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nb on" id="nb-dash" onclick="go('dash')"><span class="ni">✦</span><span class="nl">北極星</span></button>
+  <button class="nb" id="nb-daily" onclick="go('daily')"><span class="ni">📝</span><span class="nl">今日記錄</span></button>
+  <button class="nb" id="nb-cal" onclick="go('cal')"><span class="ni">📅</span><span class="nl">日曆</span></button>
+  <button class="nb" id="nb-trend" onclick="go('trend')"><span class="ni">📈</span><span class="nl">趨勢</span></button>
+  <button class="nb" id="nb-setup" onclick="go('setup')"><span class="ni">⚙️</span><span class="nl">設定</span></button>
+  <button class="nb" id="nb-cloud" onclick="go('cloud')"><span class="ni">☁️</span><span class="nl">雲端</span></button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──
+var FW_DEFAULTS = [
+  {
+    emoji:'⭐', name:'意義飛輪',
+    def:'找到個案有或無理由的相信、信仰',
+    wisdom:'身體靜下來，才能感受到信仰',
+    anchor:{name:'🫁 靜心／呼吸練習', freq:'每天', pts:15},
+    behaviors:[
+      {id:1002, name:'記錄一件今天有意義感的事', freq:'每天', pts:10},
+      {id:1003, name:'陪伴一個需要被看見的人', freq:'不定期', pts:20}
+    ]
+  },
+  {
+    emoji:'🔵', name:'自信飛輪',
+    def:'對自己的價值深信不疑',
+    wisdom:'住在自己身體裡，才能相信自己的價值',
+    anchor:{name:'🪞 好好照顧自己的儀容和姿勢', freq:'每天', pts:10},
+    behaviors:[
+      {id:2002, name:'公開說出一句真實的話', freq:'每天', pts:15},
+      {id:2003, name:'英文口說練習10分鐘', freq:'每天', pts:10}
+    ]
+  },
+  {
+    emoji:'🟡', name:'成就飛輪',
+    def:'能為人、組織、世界帶來幸福或正向',
+    wisdom:'有體力，才能持續給出貢獻',
+    anchor:{name:'🧘 瑜珈或身體運動30分鐘', freq:'每天', pts:20},
+    behaviors:[
+      {id:3002, name:'書稿推進（哪怕100字）', freq:'每天', pts:15},
+      {id:3003, name:'完成一個課程模組或教材', freq:'不定期', pts:25}
+    ]
+  },
+  {
+    emoji:'🟢', name:'金錢飛輪',
+    def:'餘裕，被動收入 > 固定與必要支出',
+    wisdom:'身體有餘裕，才有餘裕創造收入',
+    anchor:{name:'😴 睡足7小時', freq:'每天', pts:15},
+    behaviors:[
+      {id:4002, name:'完成一場諮詢或講師課', freq:'不定期', pts:20},
+      {id:4003, name:'發一則觸及潛在學員的內容', freq:'每天', pts:10}
+    ]
+  },
+  {
+    emoji:'🔴', name:'支持飛輪',
+    def:'環境、空間、周遭的人，令我感到安全、放鬆',
+    wisdom:'身體在舒適的環境裡，才感得到安全',
+    anchor:{name:'🚶 出門走路或接觸自然15分鐘', freq:'每天', pts:15},
+    behaviors:[
+      {id:5002, name:'整理一個讓自己舒適的空間', freq:'每週', pts:10},
+      {id:5003, name:'和一個同頻的人真實交流', freq:'每週', pts:20}
+    ]
+  }
+];
+
+var COLORS = ['var(--c0)','var(--c1)','var(--c2)','var(--c3)','var(--c4)'];
+var BGS    = ['var(--bg0)','var(--bg1)','var(--bg2)','var(--bg3)','var(--bg4)'];
+
+// State - always start fresh from defaults, load saved on top
+var S = {
+  northStar: '成為阿比驕傲的那個媽媽——令人安心、喜愛、驕傲的存在。',
+  flywheels: JSON.parse(JSON.stringify(FW_DEFAULTS)),
+  daily: {},
+  scriptUrl: '',
+  sheetsUrl: ''
+};
+
+// Load saved state carefully
+try {
+  var raw = localStorage.getItem('nps2');
+  if (raw) {
+    var saved = JSON.parse(raw);
+    if (saved.northStar) S.northStar = saved.northStar;
+    if (saved.daily) S.daily = saved.daily;
+    if (saved.scriptUrl) S.scriptUrl = saved.scriptUrl;
+    if (saved.sheetsUrl) S.sheetsUrl = saved.sheetsUrl;
+    // Merge flywheels carefully
+    if (saved.flywheels && saved.flywheels.length === 5) {
+      for (var i = 0; i < 5; i++) {
+        var sf = saved.flywheels[i];
+        var df = S.flywheels[i];
+        if (sf.def) df.def = sf.def;
+        if (sf.anchor && sf.anchor.name) df.anchor = sf.anchor;
+        if (sf.behaviors && sf.behaviors.length > 0) df.behaviors = sf.behaviors;
+      }
+    }
+  }
+} catch(e) {}
+
+function save() {
+  try { localStorage.setItem('nps2', JSON.stringify(S)); } catch(e) {}
+}
+
+// ── NAV ──
+function go(name) {
+  var screens = document.querySelectorAll('.screen');
+  for (var i=0; i<screens.length; i++) screens[i].classList.remove('active');
+  var btns = document.querySelectorAll('.nb');
+  for (var i=0; i<btns.length; i++) btns[i].classList.remove('on');
+  document.getElementById('s-'+name).classList.add('active');
+  document.getElementById('nb-'+name).classList.add('on');
+  if (name==='dash') renderDash();
+  if (name==='daily') {
+    renderDaily();
+    // 還原今天的光譜分數
+    var tk2 = today();
+    var saved2 = (S.scores && S.scores[tk2]) || {};
+    var sids = ['sl0','sl1','sl2','sl3','sl4'];
+    var vids = ['sv0','sv1','sv2','sv3','sv4'];
+    for (var si=0; si<5; si++) {
+      var sel = document.getElementById(sids[si]);
+      var vel = document.getElementById(vids[si]);
+      if (sel && saved2['fw'+si] !== undefined) {
+        sel.value = saved2['fw'+si];
+        if (vel) vel.textContent = saved2['fw'+si];
+      }
+    }
+  }
+  if (name==='setup') renderSetup();
+  if (name==='cal') renderCal();
+  if (name==='trend') renderTrend();
+  if (name==='cloud') renderCloud();
+}
+
+function today() {
+  var d = new Date();
+  return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+}
+
+function toast(msg, type) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast' + (type ? ' '+type : '');
+  el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); }, 2500);
+}
+
+// ── DASH ──
+function renderDash() {
+  var d = new Date();
+  var days = ['日','一','二','三','四','五','六'];
+  document.getElementById('dash-date').textContent =
+    d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日 · 週'+days[d.getDay()];
+  document.getElementById('ns-text').textContent = S.northStar;
+
+  var tk = today();
+  var done = S.daily[tk] || {};
+  var totalScore = 0, totalMax = 0;
+  var grid = document.getElementById('dash-grid');
+  grid.innerHTML = '';
+
+  for (var i=0; i<5; i++) {
+    var fw = S.flywheels[i];
+    var doneFw = done['fw'+i] || [];
+
+    // calc score
+    var fwScore = 0, fwMax = fw.anchor.pts;
+    if (doneFw.indexOf('anchor') >= 0) fwScore += fw.anchor.pts;
+    for (var j=0; j<fw.behaviors.length; j++) {
+      fwMax += fw.behaviors[j].pts;
+      if (doneFw.indexOf(fw.behaviors[j].id) >= 0) fwScore += fw.behaviors[j].pts;
+    }
+    totalScore += fwScore; totalMax += fwMax;
+    var pct = fwMax > 0 ? Math.round(fwScore/fwMax*100) : 0;
+    var total = fw.behaviors.length + 1;
+    var doneCount = doneFw.length;
+
+    var div = document.createElement('div');
+    div.className = 'fwitem';
+    (function(idx){ div.onclick = function(){ go('daily'); }; })(i);
+    div.innerHTML =
+      '<div class="fwtop">'+
+        '<div class="fwico" style="background:'+BGS[i]+'">'+fw.emoji+'</div>'+
+        '<div style="flex:1">'+
+          '<div class="fwname">'+fw.name+'</div>'+
+          '<div class="fwdef">'+fw.def+'</div>'+
+        '</div>'+
+        '<div class="fwpct" style="color:'+COLORS[i]+'">'+pct+'%</div>'+
+      '</div>'+
+      '<div class="track"><div class="fill" style="background:'+COLORS[i]+';width:'+pct+'%"></div></div>'+
+      '<div class="fwmeta">今日 '+doneCount+' / '+total+' 項行為完成</div>';
+    grid.appendChild(div);
+  }
+
+  var tp = totalMax > 0 ? Math.round(totalScore/totalMax*100) : 0;
+  document.getElementById('tscore').textContent = totalScore;
+  document.getElementById('tmax').textContent = totalMax;
+  document.getElementById('tbar').style.width = tp+'%';
+}
+
+// ── DAILY ──
+function renderDaily() {
+  var tk = today();
+  var done = S.daily[tk] || {};
+  var savedScores = (S.scores && S.scores[tk]) || {};
+  var list = document.getElementById('daily-list');
+  list.innerHTML = '';
+
+  for (var i=0; i<5; i++) {
+    var fw = S.flywheels[i];
+    var doneFw = done['fw'+i] || [];
+
+    var sec = document.createElement('div');
+    sec.className = 'dsec';
+
+    // score for header
+    var fwScore = 0;
+    if (doneFw.indexOf('anchor') >= 0) fwScore += fw.anchor.pts;
+    for (var j=0; j<fw.behaviors.length; j++) {
+      if (doneFw.indexOf(fw.behaviors[j].id) >= 0) fwScore += fw.behaviors[j].pts;
+    }
+
+    sec.innerHTML =
+      '<div class="dsech" style="background:'+BGS[i]+'">'+
+        '<span style="font-size:18px;">'+fw.emoji+'</span>'+
+        '<span style="font-size:14px;font-weight:600;color:var(--text);flex:1">'+fw.name+'</span>'+
+        '<span style="font-family:Cormorant Garamond,serif;font-size:18px;font-weight:300;color:'+COLORS[i]+'" id="dscore-'+i+'">'+fwScore+'pt</span>'+
+      '</div>'+
+      '<div class="dsecbody" id="dbody-'+i+'"></div>';
+    list.appendChild(sec);
+
+    var body = document.getElementById('dbody-'+i);
+
+    // Anchor action
+    var anchorDone = doneFw.indexOf('anchor') >= 0;
+    var aDiv = document.createElement('div');
+    aDiv.className = 'dact' + (anchorDone ? ' done' : '');
+    aDiv.setAttribute('data-fwi', i);
+    aDiv.setAttribute('data-bid', 'anchor');
+    aDiv.setAttribute('data-pts', fw.anchor.pts);
+    aDiv.innerHTML =
+      '<div class="dchk">'+(anchorDone?'✓':'')+'</div>'+
+      '<div>'+
+        '<div class="dname">'+fw.anchor.name+' <span class="anchor-badge">身體錨點</span></div>'+
+        '<div class="dpts">+'+fw.anchor.pts+'pt · '+fw.anchor.freq+'</div>'+
+      '</div>';
+    aDiv.onclick = function(){ toggleAct(this); };
+    body.appendChild(aDiv);
+
+    // Other behaviors
+    for (var j=0; j<fw.behaviors.length; j++) {
+      var b = fw.behaviors[j];
+      var isDone = doneFw.indexOf(b.id) >= 0;
+      var bDiv = document.createElement('div');
+      bDiv.className = 'dact' + (isDone ? ' done' : '');
+      bDiv.setAttribute('data-fwi', i);
+      bDiv.setAttribute('data-bid', b.id);
+      bDiv.setAttribute('data-pts', b.pts);
+      bDiv.innerHTML =
+        '<div class="dchk">'+(isDone?'✓':'')+'</div>'+
+        '<div>'+
+          '<div class="dname">'+b.name+'</div>'+
+          '<div class="dpts">+'+b.pts+'pt · '+b.freq+'</div>'+
+        '</div>';
+      bDiv.onclick = function(){ toggleAct(this); };
+      body.appendChild(bDiv);
+    }
+  }
+}
+
+function toggleAct(el) {
+  el.classList.toggle('done');
+  var chk = el.querySelector('.dchk');
+  chk.textContent = el.classList.contains('done') ? '✓' : '';
+  // update section score
+  var fwi = el.getAttribute('data-fwi');
+  var body = document.getElementById('dbody-'+fwi);
+  var acts = body.querySelectorAll('.dact.done');
+  var score = 0;
+  for (var i=0; i<acts.length; i++) score += parseInt(acts[i].getAttribute('data-pts'));
+  document.getElementById('dscore-'+fwi).textContent = score+'pt';
+}
+
+function saveDaily() {
+  var tk = today();
+  var result = {};
+  var acts = document.querySelectorAll('.dact');
+  for (var i=0; i<acts.length; i++) {
+    var a = acts[i];
+    var fwi = 'fw'+a.getAttribute('data-fwi');
+    if (!result[fwi]) result[fwi] = [];
+    if (a.classList.contains('done')) {
+      var bid = a.getAttribute('data-bid');
+      result[fwi].push(bid === 'anchor' ? 'anchor' : parseInt(bid));
+    }
+  }
+  S.daily[tk] = result;
+
+  // 儲存自評分數——直接讀 DOM 值
+  if (!S.scores) S.scores = {};
+  var getVal = function(id, def) {
+    var el = document.getElementById(id);
+    if (!el) return def;
+    var v = parseInt(el.value);
+    return isNaN(v) ? def : v;
+  };
+  S.scores[tk] = {
+    fw0: getVal('sl0', 5),
+    fw1: getVal('sl1', 5),
+    fw2: getVal('sl2', 5),
+    fw3: getVal('sl3', 5),
+    fw4: getVal('sl4', 5)
+  };
+
+  save();
+  if (S.scriptUrl) syncCloud(tk, result);
+  toast('✦ 今日記錄已儲存', 'ok');
+  setTimeout(function(){ go('dash'); }, 1200);
+}
+
+// ── TREND ──
+function renderTrend() {
+  var container = document.getElementById('trend-charts');
+  container.innerHTML = '';
+
+  var FW_INFO = [
+    {emoji:'⭐', name:'意義飛輪', color:'#7b68a8', left:'恐懼', right:'愛'},
+    {emoji:'🔵', name:'自信飛輪', color:'#5a8ca8', left:'懷疑', right:'確信'},
+    {emoji:'🟡', name:'成就飛輪', color:'#b8924a', left:'停滯', right:'流動'},
+    {emoji:'🟢', name:'金錢飛輪', color:'#3a7a52', left:'匱乏', right:'餘裕'},
+    {emoji:'🔴', name:'支持飛輪', color:'#a86b6b', left:'緊繃', right:'放鬆'},
+  ];
+
+  // Get last 30 days of score data
+  var days = [];
+  var d = new Date();
+  for (var i=29; i>=0; i--) {
+    var dd = new Date(d.getFullYear(), d.getMonth(), d.getDate()-i);
+    var k = dd.getFullYear()+'-'+(dd.getMonth()+1)+'-'+dd.getDate();
+    days.push({key:k, label:(dd.getMonth()+1)+'/'+(dd.getDate())});
+  }
+
+  var scores = S.scores || {};
+
+  for (var fi=0; fi<5; fi++) {
+    var fw = FW_INFO[fi];
+    var vals = [];
+    for (var di=0; di<days.length; di++) {
+      var sc = scores[days[di].key];
+      vals.push(sc ? (sc['fw'+fi] || 0) : null);
+    }
+
+    // Check if there's any data
+    var hasData = false;
+    for (var vi=0; vi<vals.length; vi++) { if (vals[vi] !== null) { hasData = true; break; } }
+
+    // Latest value
+    var latestVal = null;
+    for (var vi=vals.length-1; vi>=0; vi--) { if (vals[vi] !== null) { latestVal = vals[vi]; break; } }
+
+    var seg = document.createElement('div');
+    seg.className = 'trend-seg';
+
+    var maxVal = 10;
+
+    seg.innerHTML =
+      '<div class="trend-seg-top">'+
+        '<div style="width:28px;height:28px;border-radius:50%;background:'+fw.color+'20;display:flex;align-items:center;justify-content:center;font-size:14px;">'+fw.emoji+'</div>'+
+        '<div style="flex:1;margin-left:10px;">'+
+          '<div style="font-size:13px;font-weight:600;color:var(--text);">'+fw.name+'</div>'+
+          '<div style="font-size:11px;color:var(--light);">'+
+            (latestVal !== null ?
+              '<span style="color:'+fw.color+'">'+fw.left+'</span> ←  '+latestVal+'/10  → <span style="color:'+fw.color+'">'+fw.right+'</span>'
+              : '尚無資料') +
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<canvas class="trend-canvas" id="tc-'+fi+'" height="80"></canvas>'+
+      (!hasData ? '<div style="text-align:center;font-size:11px;color:var(--mist);padding:8px 0;">開始記錄後將顯示趨勢</div>' : '');
+    container.appendChild(seg);
+
+    if (hasData) {
+      setTimeout(function(idx, v, c, m){ drawTrend('tc-'+idx, v, c, m); }, 50, fi, vals, fw.color, maxVal);
+    }
+  }
+}
+
+function drawTrend(canvasId, vals, color, maxVal) {
+  var canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.offsetWidth || 300;
+  var H = 80;
+  canvas.width = W;
+  canvas.height = H;
+  ctx.clearRect(0, 0, W, H);
+
+  var pad = 8;
+  var pts = [];
+  for (var i=0; i<vals.length; i++) {
+    if (vals[i] !== null) {
+      var x = pad + (i/(vals.length-1))*(W-pad*2);
+      var y = H - pad - (vals[i]/maxVal)*(H-pad*2);
+      pts.push({x:x, y:y, v:vals[i]});
+    }
+  }
+
+  if (pts.length < 1) return;
+
+  // Draw area fill
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, H-pad);
+  for (var i=0; i<pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.lineTo(pts[pts.length-1].x, H-pad);
+  ctx.closePath();
+  ctx.fillStyle = color+'22';
+  ctx.fill();
+
+  // Draw line
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (var i=1; i<pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  // Draw dots
+  for (var i=0; i<pts.length; i++) {
+    ctx.beginPath();
+    ctx.arc(pts[i].x, pts[i].y, 3, 0, Math.PI*2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+}
+
+// ── SETUP ──
+function renderSetup() {
+  document.getElementById('ns-input').value = S.northStar;
+  var list = document.getElementById('setup-list');
+  list.innerHTML = '';
+
+  for (var i=0; i<5; i++) {
+    var fw = S.flywheels[i];
+    var card = document.createElement('div');
+    card.className = 'fwcard';
+    card.innerHTML =
+      '<div class="fwhead" style="background:'+BGS[i]+'">'+
+        '<div class="fwhead-ico">'+fw.emoji+'</div>'+
+        '<div><h3>'+fw.name+'</h3><p>定義你的滿分狀態</p></div>'+
+      '</div>'+
+      '<div class="fwbody">'+
+        '<textarea class="inp" id="fwdef-'+i+'" placeholder="當我______的時候，這個飛輪是滿的">'+fw.def+'</textarea>'+
+        '<button class="btn2" onclick="saveDef('+i+')">儲存定義</button>'+
+        '<div class="section-lbl" style="margin-top:14px;">身體錨點</div>'+
+        '<div class="anchor-box">'+
+          '<div class="anchor-wisdom">🌿 '+fw.wisdom+'</div>'+
+          '<input class="inp" id="anch-name-'+i+'" value="'+fw.anchor.name+'" placeholder="你的身體錨點行為">'+
+          '<div class="row" style="margin-bottom:8px;">'+
+            '<select class="inp" id="anch-freq-'+i+'">'+
+              '<option value="每天"'+(fw.anchor.freq==='每天'?' selected':'')+'>每天</option>'+
+              '<option value="每週"'+(fw.anchor.freq==='每週'?' selected':'')+'>每週</option>'+
+              '<option value="不定期"'+(fw.anchor.freq==='不定期'?' selected':'')+'>不定期</option>'+
+            '</select>'+
+            '<input class="inp pts" type="number" id="anch-pts-'+i+'" value="'+fw.anchor.pts+'" min="1">'+
+          '</div>'+
+          '<button class="addbtn" onclick="saveAnch('+i+')">儲存身體錨點</button>'+
+        '</div>'+
+        '<div class="section-lbl">其他行為目標</div>'+
+        '<div id="blist-'+i+'"></div>'+
+        '<div style="background:var(--sky);border-radius:12px;padding:14px;">'+
+          '<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px;">＋ 新增行為</div>'+
+          '<input class="inp" id="bname-'+i+'" placeholder="行為名稱">'+
+          '<div class="row" style="margin-bottom:8px;">'+
+            '<select class="inp" id="bfreq-'+i+'">'+
+              '<option value="每天">每天</option>'+
+              '<option value="每週">每週</option>'+
+              '<option value="不定期">不定期</option>'+
+            '</select>'+
+            '<input class="inp pts" type="number" id="bpts-'+i+'" value="10" min="1">'+
+          '</div>'+
+          '<button class="addbtn" onclick="addB('+i+')">新增</button>'+
+        '</div>'+
+      '</div>';
+    list.appendChild(card);
+    renderBList(i);
+  }
+}
+
+function renderBList(fwi) {
+  var list = document.getElementById('blist-'+fwi);
+  if (!list) return;
+  list.innerHTML = '';
+  var bs = S.flywheels[fwi].behaviors;
+  for (var j=0; j<bs.length; j++) {
+    var b = bs[j];
+    var div = document.createElement('div');
+    div.className = 'bitem';
+    div.innerHTML =
+      '<div class="bitem-info">'+
+        '<div class="bitem-name">'+b.name+'</div>'+
+        '<div class="bitem-meta">'+
+          '<span class="tag tf">'+b.freq+'</span>'+
+          '<span class="tag tp">+'+b.pts+'pt</span>'+
+        '</div>'+
+      '</div>'+
+      '<span class="bdel" onclick="delB('+fwi+','+b.id+')">×</span>';
+    list.appendChild(div);
+  }
+}
+
+function saveDef(i) {
+  var val = document.getElementById('fwdef-'+i).value.trim();
+  if (!val) { toast('請填入定義','err'); return; }
+  S.flywheels[i].def = val;
+  save();
+  toast('✦ 定義已儲存','ok');
+}
+
+function saveAnch(i) {
+  var name = document.getElementById('anch-name-'+i).value.trim();
+  var freq = document.getElementById('anch-freq-'+i).value;
+  var pts = parseInt(document.getElementById('anch-pts-'+i).value) || 15;
+  if (!name) { toast('請填入身體錨點','err'); return; }
+  S.flywheels[i].anchor = {name:name, freq:freq, pts:pts};
+  save();
+  toast('✦ 身體錨點已儲存','ok');
+}
+
+function addB(fwi) {
+  var name = document.getElementById('bname-'+fwi).value.trim();
+  var freq = document.getElementById('bfreq-'+fwi).value;
+  var pts = parseInt(document.getElementById('bpts-'+fwi).value) || 10;
+  if (!name) { toast('請填入行為名稱','err'); return; }
+  S.flywheels[fwi].behaviors.push({id: Date.now(), name:name, freq:freq, pts:pts});
+  save();
+  document.getElementById('bname-'+fwi).value = '';
+  renderBList(fwi);
+  toast('✦ 行為已新增','ok');
+}
+
+function delB(fwi, bid) {
+  var bs = S.flywheels[fwi].behaviors;
+  var newBs = [];
+  for (var i=0; i<bs.length; i++) { if (bs[i].id !== bid) newBs.push(bs[i]); }
+  S.flywheels[fwi].behaviors = newBs;
+  save();
+  renderBList(fwi);
+  toast('已刪除','');
+}
+
+function saveNS() {
+  var val = document.getElementById('ns-input').value.trim();
+  if (!val) { toast('請填入北極星宣言','err'); return; }
+  S.northStar = val;
+  save();
+  toast('✦ 北極星已更新','ok');
+}
+
+// ── CLOUD ──
+function renderCloud() {
+  document.getElementById('script-inp').value = S.scriptUrl || '';
+  document.getElementById('sheets-inp').value = S.sheetsUrl || '';
+  var badge = document.getElementById('sync-badge');
+  var txt = document.getElementById('sync-txt');
+  if (S.scriptUrl) {
+    badge.className = 'badge on';
+    txt.textContent = '已連接 Google Sheets';
+    if (S.sheetsUrl) {
+      document.getElementById('sheets-link').href = S.sheetsUrl;
+      document.getElementById('sheets-wrap').style.display = 'block';
+    }
+  } else {
+    badge.className = 'badge off';
+    txt.textContent = '尚未連接';
+  }
+}
+
+function saveCloud() {
+  var url = document.getElementById('script-inp').value.trim();
+  var sh = document.getElementById('sheets-inp').value.trim();
+  if (!url) { toast('請貼上 Apps Script 網址','err'); return; }
+  S.scriptUrl = url;
+  S.sheetsUrl = sh;
+  save();
+  renderCloud();
+  toast('✦ 雲端設定已儲存','ok');
+}
+
+function syncCloud(tk, done) {
+  if (!S.scriptUrl) return;
+  try {
+    var scores = (S.scores && S.scores[tk]) || {};
+    var url = S.scriptUrl +
+      '?date=' + encodeURIComponent(tk) +
+      '&fw0=' + (scores.fw0 !== undefined ? scores.fw0 : 5) +
+      '&fw1=' + (scores.fw1 !== undefined ? scores.fw1 : 5) +
+      '&fw2=' + (scores.fw2 !== undefined ? scores.fw2 : 5) +
+      '&fw3=' + (scores.fw3 !== undefined ? scores.fw3 : 5) +
+      '&fw4=' + (scores.fw4 !== undefined ? scores.fw4 : 5);
+    var img = new Image();
+    img.src = url;
+  } catch(e) {}
+}
+
+// ── CALENDAR ──
+var calYear, calMonth;
+
+function initCal() {
+  var d = new Date();
+  calYear = d.getFullYear();
+  calMonth = d.getMonth();
+}
+
+function calPrev() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCal();
+}
+
+function calNext() {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCal();
+}
+
+function renderCal() {
+  var monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById('cal-month-label').textContent = calYear + '年 ' + monthNames[calMonth];
+
+  var grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+
+  var firstDay = new Date(calYear, calMonth, 1).getDay();
+  var daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  var today = new Date();
+  var todayStr = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+
+  var FW_COLORS = ['#7b68a8','#5a8ca8','#b8924a','#3a7a52','#a86b6b'];
+
+  // Empty cells before first day
+  for (var i=0; i<firstDay; i++) {
+    var empty = document.createElement('div');
+    grid.appendChild(empty);
+  }
+
+  // Day cells
+  for (var d=1; d<=daysInMonth; d++) {
+    var key = calYear+'-'+calMonth+1+'-'+d;
+    // Also try with actual month number
+    var keyAlt = calYear+'-'+(calMonth+1)+'-'+d;
+    var dayData = S.daily[key] || S.daily[keyAlt] || null;
+    var isToday = (keyAlt === todayStr);
+
+    var cell = document.createElement('div');
+    cell.style.cssText = 'background:'+(isToday?'#1e2d3d':' #fff')+';border-radius:10px;padding:6px 4px;min-height:64px;box-shadow:0 1px 6px rgba(0,0,0,0.04);display:flex;flex-direction:column;align-items:center;gap:3px;';
+
+    // Day number
+    var dnum = document.createElement('div');
+    dnum.textContent = d;
+    dnum.style.cssText = 'font-size:11px;font-weight:600;color:'+(isToday?'#c4a882':'#2c3e50')+';margin-bottom:2px;';
+    cell.appendChild(dnum);
+
+    // Five dots
+    for (var fi=0; fi<5; fi++) {
+      var dot = document.createElement('div');
+      var fwKey = 'fw'+fi;
+      var hasDone = dayData && dayData[fwKey] && dayData[fwKey].length > 0;
+      dot.style.cssText = 'width:7px;height:7px;border-radius:50%;background:'+(hasDone ? FW_COLORS[fi] : (isToday?'rgba(255,255,255,0.15)':'#e8ecf0'))+';';
+      cell.appendChild(dot);
+    }
+
+    grid.appendChild(cell);
+  }
+}
+
+initCal();
+
+// ── INIT ──
+renderDash();
+</script>
+</body>
+</html>
