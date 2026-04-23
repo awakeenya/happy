@@ -164,8 +164,6 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; h
   </div>
   <div style="padding:0 16px;" id="dash-grid"></div>
 </div>
-
-<!-- DAILY -->
 <div class="screen" id="s-daily">
   <div class="hero">
     <span class="hlabel">Daily Actions</span>
@@ -364,50 +362,50 @@ var FW_DEFAULTS = [
     emoji:'⭐', name:'意義飛輪',
     def:'找到個案有或無理由的相信、信仰',
     wisdom:'身體靜下來，才能感受到信仰',
-    anchor:{name:'🫁 靜心／呼吸練習', freq:'每天', pts:15},
+    anchor:{name:'🫁 靜心／呼吸練習', freq:'每天', pts:1.5},
     behaviors:[
-      {id:1002, name:'記錄一件今天有意義感的事', freq:'每天', pts:10},
-      {id:1003, name:'陪伴一個需要被看見的人', freq:'不定期', pts:20}
+      {id:1002, name:'記錄一件今天有意義感的事', freq:'每天', pts:1},
+      {id:1003, name:'陪伴一個需要被看見的人', freq:'不定期', pts:1.5}
     ]
   },
   {
     emoji:'🔵', name:'自信飛輪',
     def:'對自己的價值深信不疑',
     wisdom:'住在自己身體裡，才能相信自己的價值',
-    anchor:{name:'🪞 好好照顧自己的儀容和姿勢', freq:'每天', pts:10},
+    anchor:{name:'🪞 好好照顧自己的儀容和姿勢', freq:'每天', pts:1},
     behaviors:[
-      {id:2002, name:'公開說出一句真實的話', freq:'每天', pts:15},
-      {id:2003, name:'英文口說練習10分鐘', freq:'每天', pts:10}
+      {id:2002, name:'公開說出一句真實的話', freq:'每天', pts:1},
+      {id:2003, name:'英文口說練習10分鐘', freq:'每天', pts:1}
     ]
   },
   {
     emoji:'🟡', name:'成就飛輪',
     def:'能為人、組織、世界帶來幸福或正向',
     wisdom:'有體力，才能持續給出貢獻',
-    anchor:{name:'🧘 瑜珈或身體運動30分鐘', freq:'每天', pts:20},
+    anchor:{name:'🧘 瑜珈或身體運動30分鐘', freq:'每天', pts:2},
     behaviors:[
-      {id:3002, name:'書稿推進（哪怕100字）', freq:'每天', pts:15},
-      {id:3003, name:'完成一個課程模組或教材', freq:'不定期', pts:25}
+      {id:3002, name:'書稿推進（哪怕100字）', freq:'每天', pts:1},
+      {id:3003, name:'完成一個課程模組或教材', freq:'不定期', pts:2}
     ]
   },
   {
     emoji:'🟢', name:'金錢飛輪',
     def:'餘裕，被動收入 > 固定與必要支出',
     wisdom:'身體有餘裕，才有餘裕創造收入',
-    anchor:{name:'😴 睡足7小時', freq:'每天', pts:15},
+    anchor:{name:'😴 睡足7小時', freq:'每天', pts:1.5},
     behaviors:[
-      {id:4002, name:'完成一場諮詢或講師課', freq:'不定期', pts:20},
-      {id:4003, name:'發一則觸及潛在學員的內容', freq:'每天', pts:10}
+      {id:4002, name:'完成一場諮詢或講師課', freq:'不定期', pts:1.5},
+      {id:4003, name:'發一則觸及潛在學員的內容', freq:'每天', pts:1}
     ]
   },
   {
     emoji:'🔴', name:'支持飛輪',
     def:'環境、空間、周遭的人，令我感到安全、放鬆',
     wisdom:'身體在舒適的環境裡，才感得到安全',
-    anchor:{name:'🚶 出門走路或接觸自然15分鐘', freq:'每天', pts:15},
+    anchor:{name:'🚶 出門走路或接觸自然15分鐘', freq:'每天', pts:1.5},
     behaviors:[
-      {id:5002, name:'整理一個讓自己舒適的空間', freq:'每週', pts:10},
-      {id:5003, name:'和一個同頻的人真實交流', freq:'每週', pts:20}
+      {id:5002, name:'整理一個讓自己舒適的空間', freq:'每週', pts:1},
+      {id:5003, name:'和一個同頻的人真實交流', freq:'每週', pts:1.5}
     ]
   }
 ];
@@ -431,6 +429,7 @@ try {
     var saved = JSON.parse(raw);
     if (saved.northStar) S.northStar = saved.northStar;
     if (saved.daily) S.daily = saved.daily;
+    if (saved.scores) S.scores = saved.scores;
     if (saved.scriptUrl) S.scriptUrl = saved.scriptUrl;
     if (saved.sheetsUrl) S.sheetsUrl = saved.sheetsUrl;
     // Merge flywheels carefully
@@ -541,10 +540,11 @@ function renderDash() {
     grid.appendChild(div);
   }
 
-  var tp = totalMax > 0 ? Math.round(totalScore/totalMax*100) : 0;
-  document.getElementById('tscore').textContent = totalScore;
-  document.getElementById('tmax').textContent = totalMax;
-  document.getElementById('tbar').style.width = tp+'%';
+  var tp = Math.min(Math.round(totalScore * 10) / 10, 24);
+  var tpPct = Math.min(Math.round(totalScore / 24 * 100), 100);
+  document.getElementById('tscore').textContent = tp;
+  document.getElementById('tmax').textContent = 24;
+  document.getElementById('tbar').style.width = tpPct+'%';
 }
 
 // ── DAILY ──
@@ -811,7 +811,7 @@ function renderSetup() {
               '<option value="每週"'+(fw.anchor.freq==='每週'?' selected':'')+'>每週</option>'+
               '<option value="不定期"'+(fw.anchor.freq==='不定期'?' selected':'')+'>不定期</option>'+
             '</select>'+
-            '<input class="inp pts" type="number" id="anch-pts-'+i+'" value="'+fw.anchor.pts+'" min="1">'+
+            '<input class="inp pts" type="number" id="anch-pts-'+i+'" value="'+fw.anchor.pts+'" min="0.5" step="0.5">'+
           '</div>'+
           '<button class="addbtn" onclick="saveAnch('+i+')">儲存身體錨點</button>'+
         '</div>'+
@@ -826,7 +826,7 @@ function renderSetup() {
               '<option value="每週">每週</option>'+
               '<option value="不定期">不定期</option>'+
             '</select>'+
-            '<input class="inp pts" type="number" id="bpts-'+i+'" value="10" min="1">'+
+            '<input class="inp pts" type="number" id="bpts-'+i+'" value="1" min="0.5" step="0.5">'+
           '</div>'+
           '<button class="addbtn" onclick="addB('+i+')">新增</button>'+
         '</div>'+
@@ -869,7 +869,7 @@ function saveDef(i) {
 function saveAnch(i) {
   var name = document.getElementById('anch-name-'+i).value.trim();
   var freq = document.getElementById('anch-freq-'+i).value;
-  var pts = parseInt(document.getElementById('anch-pts-'+i).value) || 15;
+  var pts = parseFloat(document.getElementById('anch-pts-'+i).value) || 1.5;
   if (!name) { toast('請填入身體錨點','err'); return; }
   S.flywheels[i].anchor = {name:name, freq:freq, pts:pts};
   save();
@@ -879,7 +879,7 @@ function saveAnch(i) {
 function addB(fwi) {
   var name = document.getElementById('bname-'+fwi).value.trim();
   var freq = document.getElementById('bfreq-'+fwi).value;
-  var pts = parseInt(document.getElementById('bpts-'+fwi).value) || 10;
+  var pts = parseFloat(document.getElementById('bpts-'+fwi).value) || 1;
   if (!name) { toast('請填入行為名稱','err'); return; }
   S.flywheels[fwi].behaviors.push({id: Date.now(), name:name, freq:freq, pts:pts});
   save();
